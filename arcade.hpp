@@ -1,12 +1,13 @@
 #ifndef ARCADE_HPP
 #define ARCADE_HPP
+#include <exception>
+#include <filesystem>
+#pragma once
 #include <cstdlib>
 #include <ctime>
 #include <dlfcn.h>
 #include <iostream>
 #include <sys/stat.h>
-#include <chrono>
-#include <thread>
 #include <raylib.h>
 
 #define SCREENWIDTH 800
@@ -49,7 +50,12 @@ class HotReload {
     public:
     HotReload(std::string& path) :  library(nullptr), libraryPath(path + ".so"), sourcePath(path + ".cpp"), update_handler(nullptr), render_handler(nullptr) {
         lastSourceModTime = getLastMod(sourcePath);
-        loadLibrary();
+        if (std::filesystem::exists(libraryPath)) 
+            loadLibrary();
+        else {
+            std::cerr << "Error: shared object doesn't exist" << std::endl;
+            throw std::exception();
+        }
     }
     ~HotReload() {
         unloadLibrary();
@@ -114,5 +120,4 @@ class HotReload {
 	}
 
 };
-
 #endif
